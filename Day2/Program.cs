@@ -26,12 +26,12 @@ bool IsValid(string hand)
 
 int CubeCount(string hand, string colour)
 {
-	Regex rex = new($"(\\d+) {colour}");
-	return rex.IsMatch(hand) ? int.Parse(rex.Match(hand).Groups[1].Value) : 0;
+	var match = new Regex($"(\\d+) {colour}").Match(hand);
+	return match.Success ? int.Parse(match.Groups[1].Value) : 0;
 }
 
 int MinCubes(string game, string colour)
 {
-	Regex r = new($"(\\d+) {colour}");
-	return Math.Max(r.Matches(game).Max(x => int.Parse(x.Groups[1].Value)), 1);
+	var matches = new Regex($"(\\d+) {colour}").Matches(game);
+	return Math.Max(matches.Max(x => int.Parse(x.Groups[1].Value)), 1);
 }
