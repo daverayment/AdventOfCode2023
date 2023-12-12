@@ -6,7 +6,6 @@ var lines = File.ReadAllLines("Input.txt");
 Regex rex = new(@"\w+");
 
 Dictionary<string, (string Left, string Right)> network = [];
-
 for (int i = 2; i < lines.Length; i++)
 {
 	var matches = rex.Matches(lines[i]);
@@ -25,38 +24,24 @@ do
 
 Console.WriteLine(index);   // 19199
 
-var currentNodes = network.Where(x => x.Key.EndsWith('A'))
-	.Select(x => x.Key)
-	.ToArray();
-string[] originalNodes = new string[currentNodes.Length];
-currentNodes.CopyTo(originalNodes, 0);
-
-var lastZ = new int[currentNodes.Length];
-
-index = 0;
-string[] newNodes = new string[currentNodes.Length];
-Dictionary<string, int> loops = [];
-
-do
+List<int> loops = [];
+foreach (var node in network.Where(x => x.Key.EndsWith('A')))
 {
-	char instruction = lines[0][index % lines[0].Length];
-	for (int i = 0; i < currentNodes.Length; i++)
+	index = 0;
+	string current = node.Key;
+	do
 	{
-		var (Left, Right) = network[currentNodes[i]];
-		newNodes[i] = instruction == 'L' ? Left : Right;
-		if (newNodes[i].EndsWith('Z'))
+		var (Left, Right) = network[current];
+		char instruction = lines[0][index % lines[0].Length];
+		current = instruction == 'L' ? Left : Right;
+		index++;
+		if (current.EndsWith('Z'))
 		{
-			loops.Add(originalNodes[i], index + 1);
-			if (loops.Count == currentNodes.Length)
-			{
-                Console.WriteLine(Numerics.LeastCommonMultiple(
-					loops.Select(x => new BigInteger(x.Value)).ToArray()));
-				return;
-            }
+			loops.Add(index);
+			break;
 		}
-	}
-	newNodes.CopyTo(currentNodes, 0);
-	index++;
-} while (currentNodes.Any(x => !x.EndsWith('Z')));
+	} while (true);
+}
 
-Console.WriteLine(index);   // 13663968099527
+Console.WriteLine(Numerics.LeastCommonMultiple(
+	loops.Select(x => new BigInteger(x)).ToArray())); // 13663968099527
