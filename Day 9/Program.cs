@@ -1,4 +1,5 @@
-﻿long total = 0;
+﻿long partOne = 0;
+long partTwo = 0;
 
 foreach (string line in File.ReadAllLines("Input.txt"))
 {
@@ -12,12 +13,16 @@ foreach (string line in File.ReadAllLines("Input.txt"))
 	} while (!working.All(x => x == 0));
 
 	int toAdd = 0;
+	int toSub = 0;
 	for (int i = triangle.Count - 1; i >= 0; i--)
 	{
 		toAdd += triangle[i].Last();
+		toSub = triangle[i].First() - toSub;
 	}
 
-	total += toAdd;
+	partOne += toAdd;
+	partTwo += toSub;
 }
 
-Console.WriteLine(total);   // 1974232246
+Console.WriteLine(partOne);	// 1974232246
+Console.WriteLine(partTwo);	// 928
