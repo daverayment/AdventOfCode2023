@@ -7,31 +7,61 @@ var lines = File.ReadAllLines("Input.txt");
 
 (int Y, int X) start = (-1, -1);
 
-for (int i = 0; i < lines.Length; i++)
+// Keep track of vertices for area calculation.
+List<(int Y, int X)> vertices = [];
+
+for (int y = 0; y < lines.Length; y++)
 {
-	if (lines[i].Contains('S'))
+	if (lines[y].Contains('S'))
 	{
-		start = (i, lines[i].IndexOf('S'));
+		start = (y, lines[y].IndexOf('S'));
 		break;
 	}
 }
 
-Console.WriteLine(GetPathLength(lines, start) / 2);	// 6828
+vertices.Add(start);
 
-int GetPathLength(string[] maze, (int Y, int X) start)
+var direction = ValidDirections(lines, start).First();
+var current = (Y: start.Y + direction.DY, X: start.X + direction.DX);
+int length = 1;
+
+double area = 0;	// total area of enclosed space
+
+while (current != start)
 {
-	var direction = ValidDirections(maze, start).First();
-	int length = 1;
-	var current = (Y: start.Y + direction.DY, X: start.X + direction.DX);
-	while (current != start)
+	var newDirection = NextDirection(lines[current.Y][current.X], direction);
+	if (newDirection != direction)
 	{
-		direction = NextDirection(maze[current.Y][current.X], direction);
-		current.Y += direction.DY;
-		current.X += direction.DX;
-		length++;
+		vertices.Add(current);
+		direction = newDirection;
+		UpdateArea(vertices, ref area);
 	}
 
-	return length;
+	current.Y += direction.DY;
+	current.X += direction.DX;
+	length++;
+}
+
+// Part One.
+Console.WriteLine(length / 2);  // 6828
+
+// Part Two.
+// Close the polygon and calculate the area total.
+vertices.Add(start);
+UpdateArea(vertices, ref area);
+area = Math.Abs(area / 2);
+// Need to make an adjustment for the size of the pipeline itself.
+// TODO: use another method (shifting the grid?) to remove the need for this.
+area = area - (length / 2) + 1;
+Console.WriteLine(area);	// 459
+
+void UpdateArea(List<(int Y, int X)> vertices, ref double area)
+{
+	if (vertices.Count < 2) return;
+
+	int j = vertices.Count - 2;
+	int i = vertices.Count - 1;
+	area += (vertices[j].X * vertices[i].Y) - (vertices[i].X * vertices[j].Y);
 }
 
 IEnumerable<(int DY, int DX)> ValidDirections(string[] maze, (int Y, int X) pos)
@@ -44,7 +74,7 @@ IEnumerable<(int DY, int DX)> ValidDirections(string[] maze, (int Y, int X) pos)
 
 (int DY, int DX) NextDirection(char current, (int DY, int DX) direction)
 {
-	// Maze character and direction to new direction.
+	// Map current direction and new character to new direction.
 	var table = new Dictionary<(char, (int, int)), (int, int)>
 	{
 		{ ('F', west), south },
